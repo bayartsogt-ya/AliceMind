@@ -42,8 +42,14 @@ from optimization import BERTAdam, Adamax
 
 logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s', 
                     datefmt = '%m/%d/%Y %H:%M:%S',
-                    level = logging.ERROR)
+                    level = logging.INFO)
+
+
 logger = logging.getLogger(__name__)
+
+logger.info("PRINTING INFO")
+logger.error("PRINTING ERROR")
+logger.warning("PRINTING WARNING")
 
 
 class InputExample(object):
@@ -1405,9 +1411,11 @@ def main():
                 output_eval_file = os.path.join(args.output_dir, args.task_name+".eval_results_EP{}".format(epoch_id))
                 with open(output_eval_file, "w") as writer:
                     logger.info("***** Eval results *****")
+                    print("***** Eval results *****")
                     for key in sorted(result.keys()):
                         logger.info("%s:  %s:  %s = %s", args.init_checkpoint if args.init_checkpoint is not None else args.pretrain_model, args.task_name, key, str(result[key]))
                         writer.write("%s = %s\n" % (key, str(result[key])))
+                        print(result)
             if args.do_test:
                 #####################run prediction####################
                 instance_idx = 0
