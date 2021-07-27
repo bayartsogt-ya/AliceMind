@@ -1215,7 +1215,8 @@ def main():
         logger.info("***** Process dev data *****")
         eval_examples = []
         for task_name, processor in zip(args.task_name.split(','), processor_list):
-            data_dir = os.path.join(args.data_dir, task_name)
+            # data_dir = os.path.join(args.data_dir, task_name)
+            data_dir = args.data_dir
             if task_name.lower() == 'none':
                 eval_examples.append([])
                 continue
@@ -1251,7 +1252,8 @@ def main():
         logger.info("***** Process test data *****")
         test_examples = []
         for task_name, processor in zip(args.task_name.split(','), processor_list):
-            data_dir = os.path.join(args.data_dir, task_name)
+            # data_dir = os.path.join(args.data_dir, task_name)
+            data_dir = args.data_dir
             if task_name.lower() == 'none':
                 test_examples.append([])
                 continue
