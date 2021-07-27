@@ -1190,6 +1190,11 @@ def main():
         logger.info("  Num tasks = %d", len(train_examples))
         logger.info("  Batch size = %d", args.train_batch_size)
         logger.info("  Num steps = %d", num_train_steps)
+        print("***** Running training *****")
+        print("  Num examples = %d", len(train_features))
+        print("  Num tasks = %d", len(train_examples))
+        print("  Batch size = %d", args.train_batch_size)
+        print("  Num steps = %d", num_train_steps)
         if not args.fast_train:
             all_input_ids = torch.tensor([f.input_ids for f in train_features], dtype=torch.long)
             all_input_mask = torch.tensor([f.input_mask for f in train_features], dtype=torch.long)
@@ -1242,6 +1247,10 @@ def main():
         logger.info("  Num examples = %d", len(eval_features))
         logger.info("  Num tasks = %d", len(eval_examples))
         logger.info("  Batch size = %d", args.eval_batch_size)
+        print("***** Running evaluation *****")
+        print("  Num examples = %d", len(eval_features))
+        print("  Num tasks = %d", len(eval_examples))
+        print("  Batch size = %d", args.eval_batch_size)
         all_input_ids = torch.tensor([f.input_ids for f in eval_features], dtype=torch.long)
         all_input_mask = torch.tensor([f.input_mask for f in eval_features], dtype=torch.long)
         all_segment_ids = torch.tensor([f.segment_ids for f in eval_features], dtype=torch.long)
@@ -1322,6 +1331,10 @@ def main():
                 tr_loss += loss.item()
                 nb_tr_examples += input_ids.size(0)
                 nb_tr_steps += 1
+
+                if nb_tr_steps % 16 == 0:
+                    print(f"nb_tr_steps {nb_tr_steps:3d} => tr_loss {tr_loss/nb_tr_steps:.5f}")
+
                 if (step + 1) % args.gradient_accumulation_steps == 0:
                     if args.fp16 or args.optimize_on_cpu:
                         if args.fp16 and args.loss_scale != 1.0:
