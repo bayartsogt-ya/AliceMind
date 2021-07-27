@@ -30,6 +30,7 @@ import json
 from torch.utils.data import Dataset, Sampler, TensorDataset, DataLoader, RandomSampler, SequentialSampler
 from torch.utils.data.distributed import DistributedSampler
 
+import pandas as pd
 import numpy as np
 import scipy.stats as sp
 from multiprocessing import Pool
@@ -164,6 +165,10 @@ class DataProcessor(object):
         text_list = open(input_file).readlines()
         text_list = [json.loads(line) for line in text_list]
         return text_list
+
+    @classmethod
+    def _read_tsv_pandas(cls, input_file):
+        return pd.read_csv(input_file, sep="\t")
 
 class OCNLIProcessor(DataProcessor):
     def get_train_examples(self, data_dir):
@@ -645,31 +650,29 @@ class CommonLitProcessor(DataProcessor):
     def get_train_examples(self, data_dir):
         """See base class."""
         return self._create_examples(
-            self._read_tsv(os.path.join(data_dir, "train.tsv")), "train")
+            self._read_tsv_pandas(os.path.join(data_dir, "train.tsv")), "train")
 
     def get_dev_examples(self, data_dir):
         """See base class."""
         return self._create_examples(
-            self._read_tsv(os.path.join(data_dir, "dev.tsv")), "dev")
+            self._read_tsv_pandas(os.path.join(data_dir, "valid.tsv")), "dev")
 
     def get_test_examples(self, data_dir):
         """See base class."""
         return self._create_examples(
-            self._read_tsv(os.path.join(data_dir, "test.tsv")), "test")
+            self._read_tsv_pandas(os.path.join(data_dir, "test.tsv")), "test")
 
     def get_labels(self):
         """See base class."""
         return ['Regression']
 
-    def _create_examples(self, lines, set_type):
+    def _create_examples(self, df, set_type):
         """Creates examples for the training and dev sets."""
         examples = []
-        for (i, line) in enumerate(lines):
-            if i == 0:
-                continue
+        for i, line in df.iterrows():
             guid = "%s-%s" % (set_type, i)
-            text_a = tokenization.convert_to_unicode(line[0])
-            label = float(tokenization.convert_to_unicode(line[1])) if set_type!='test' else '0'
+            text_a = tokenization.convert_to_unicode(line.excerpt)
+            label = float(line.label) if set_type!='test' else '0'
             examples.append(
                 InputExample(guid=guid, text_a=text_a, text_b=None, label=label))
         return examples
