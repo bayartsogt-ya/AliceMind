@@ -42,7 +42,7 @@ from optimization import BERTAdam, Adamax
 
 logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s', 
                     datefmt = '%m/%d/%Y %H:%M:%S',
-                    level = logging.INFO)
+                    level = logging.ERROR)
 logger = logging.getLogger(__name__)
 
 
@@ -1287,11 +1287,12 @@ def main():
         test_dataloader = DataLoader(test_data, sampler=test_sampler, batch_size=args.eval_batch_size)
 
     if args.do_train:
-        for epoch_id in trange(int(args.num_train_epochs), desc="Epoch"):
+        for epoch_id in range(int(args.num_train_epochs)):
+            print(f"EPOCH {epoch_id}")
             model.train()
             tr_loss = 0
             nb_tr_examples, nb_tr_steps = 0, 0
-            for step, batch in enumerate(tqdm(train_dataloader, desc="Iteration")):
+            for step, batch in enumerate(train_dataloader):
                 batch = tuple(t.to(device) for t in batch)
                 input_ids, input_mask, segment_ids, label_ids, label_index = batch
                 loss, _ = model(input_ids, segment_ids, input_mask, label_ids, label_index, epoch_id=epoch_id if args.gradual_unfreezing else -1)
@@ -1361,7 +1362,11 @@ def main():
                     for index, (logit, label_id) in enumerate(zip(logits, np.split(label_ids, max_eval_index, axis=1))):
                         for is_match, single_label, ins_logit in zip((index == label_index).tolist(), label_id.tolist(), logit.tolist()):
                             if is_match:
-                                eval_logits_files[index].write(str(single_label)+'\t'+str(ins_logit)+'\n')
+                                if len(ins_logit) == len(single_label) == 1:
+                                    eval_logits_files[index].write(str(single_label[0])+'\t'+str(ins_logit[0])+'\n')
+                                else:
+                                    eval_logits_files[index].write(str(single_label)+'\t'+str(ins_logit)+'\n')
+
                         if len(label_list[index]) != 1:
                             outputs = np.argmax(logit, axis=1)
                             tmp_eval_accuracy.append(np.sum((outputs.flatten() == label_id.flatten()) * (index == label_index)))
